@@ -22,6 +22,8 @@ public:
 };
 QNode::QNode(string type) {//constructor
     this->type = type;
+    prevQ = nullptr;
+    nextQ = nullptr;
 }
 
 class QuestionBank {
@@ -29,7 +31,10 @@ public:
     QNode* head;
     QNode* tail;
     //constructor
-    QuestionBank();
+    QuestionBank() {
+        head = nullptr;
+        tail = nullptr;
+    }
     //methods
     void printQuestionInfo() {//test purposes only
         QNode* traverser = head;
@@ -37,22 +42,25 @@ public:
             cout << "type is " << traverser->type << endl;
             cout << "prompt is " << traverser->questionPrompt <<endl;
             cout << "ptVal is " << traverser->ptValue <<endl;
-            cout << "correctAns is " << traverser->correctAns <<endl;
+            cout << "correctAns is " << traverser->correctAns <<endl<<endl;
             traverser = traverser -> nextQ;
         }
     }
     void appendToTail(QNode* newQuestion) {
-        newQuestion->prevQ = tail;
-        newQuestion->nextQ = nullptr;
-        tail->nextQ = newQuestion;  
-        tail = newQuestion;
+        if (head == nullptr) {
+            head = newQuestion;
+            tail = newQuestion;
+        } else {
+            newQuestion->prevQ = tail;
+            newQuestion->nextQ = nullptr;
+            tail->nextQ = newQuestion;  
+            tail = newQuestion;
+        }
     }
+    void writeQuestion(string type) {
 
+    }
 };
-QuestionBank::QuestionBank() {//constructor
-    QNode* tempHead = new QNode("");
-    tail = tempHead->nextQ;
-}
 
 //printFunctions
 void printWelcome() {
@@ -71,10 +79,30 @@ int main () {
 
     printWelcome();
 
-
-
-
     printGoodbye();
+
+    /* Testing Purposes Below */
+
+
+    //testing appendToTail
+    QNode* test1 = new QNode("tf");
+    test1->correctAns = "love";
+    test1->ptValue = 5;
+    test1->questionPrompt = "what is always the answer";
+    qBank->appendToTail(test1);
+
+    QNode* test2 = new QNode("tf");
+    test2->correctAns = "hate";
+    test2->ptValue = 8;
+    test2->questionPrompt = "what isnt always the answer";
+    qBank->appendToTail(test2);
+
+    QNode* test3 = new QNode("mqc");
+    test3->correctAns = "A";
+    test3->ptValue = 6;
+    test3->questionPrompt = "what isnt always the answer";
+    qBank->appendToTail(test3);
+
 
     qBank->printQuestionInfo();
 }
