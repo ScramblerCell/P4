@@ -70,7 +70,7 @@ bool isOkToAddQ() {
     getline(cin, input);
     input = makeUpperCase(input);
     while (input != "Y" && input != "N") {
-        cout <<cmdErrMsg << endl << "Question saved. Continue? [y/n]: "; 
+        cout <<cmdErrMsg << endl << endl << "Question saved. Continue? [y/n]: "; 
         getline(cin, input);
         input = makeUpperCase(input);
         cout << endl;
@@ -171,10 +171,9 @@ public:
     }
     void writeQuestion(string type) {
         QNode* currQ = new QNode(type);
-        
+        //get question        
         currQ->questionPrompt = getPrompt();
-
-        
+        //get correctAns
         if(type == "TF") {//get correctAns for TF
             string buffer;
             //initial input
@@ -183,7 +182,7 @@ public:
             buffer = makeUpperCase(buffer);
             //input validation
             while (buffer != "TRUE" && buffer != "FALSE") {
-                cout << endl <<ansErrMsg << endl <<"Select correct Answer: "; 
+                cout <<ansErrMsg << endl << endl <<"Select correct Answer: "; 
                 getline(cin, buffer);
                 buffer = makeUpperCase(buffer);
             }
@@ -192,15 +191,15 @@ public:
         else if (type == "WR") {//get correctAns for WR
             string buffer;
             //initial input
-            cout << "Type correct Answer: "; 
+            cout << endl << "Type correct Answer: "; 
             getline(cin, buffer);
             currQ->correctAns = makeUpperCase(buffer);
         }
-        else if (type == "MCQ"){
+        else if (type == "MCQ"){//add choices & get correctAns
             //add choices to map
             string choiceInput;
             char currLetter = 'A';
-            cout << "[At any time, type ‘quit()’ to exit]" << endl;
+            cout << "[At any time, type ‘quit()’ to exit]" << endl << endl;
             while (true) {
                 cout << "Enter choice " << currLetter << ": ";
                 getline(cin, choiceInput);
@@ -216,9 +215,9 @@ public:
 
         }
         else {cout << "!!!type wasn't available!!!";}
-        
+        //get point value
         currQ->ptValue = getValidPt();;
-
+        //append to questionBank
         appendToTail(currQ);
     }
 };
@@ -236,7 +235,7 @@ int main () {
     bool addStatus = true;
     //writeQuestion loop
     while (addStatus == true) {
-        cout << endl << "=== QUESTION " << totalQuestions << " ===" << endl;
+        cout << endl << endl << "=== QUESTION " << totalQuestions << " ===" << endl << endl;
         //write question
         qBank->writeQuestion(chooseType());
         totalQuestions++;
@@ -246,29 +245,5 @@ int main () {
     }
 
     printGoodbye();
-
-    /* Testing Purposes Below */
-
-
-    /* //testing appendToTail
-    QNode* test1 = new QNode("tf");
-    test1->correctAns = "love";
-    test1->ptValue = 5;
-    test1->questionPrompt = "what is always the answer";
-    qBank->appendToTail(test1);
-
-    QNode* test2 = new QNode("tf");
-    test2->correctAns = "hate";
-    test2->ptValue = 8;
-    test2->questionPrompt = "what isnt always the answer";
-    qBank->appendToTail(test2);
-
-    QNode* test3 = new QNode("mqc");
-    test3->correctAns = "A";
-    test3->ptValue = 6;
-    test3->questionPrompt = "what isnt always the answer";
-    qBank->appendToTail(test3); */
-
-
     qBank->printQuestionInfo();
 }
