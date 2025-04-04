@@ -104,18 +104,24 @@ QNode::QNode(string type) {//constructor
     this->type = type;
     prevQ = nullptr;
     nextQ = nullptr;
+    //choices['A'] = "[[NO CHOICES WERE ADDED]]";
 }
 
 class QuestionBank {
 public:
     QNode* head;
     QNode* tail;
+    int totalQuestions;
+    double totalPoints;
+
     //constructor
     QuestionBank() {
         head = nullptr;
         tail = nullptr;
+        totalQuestions = 0;
+        totalPoints = 0;
     }
-    //methods
+    //writingQuestion methods
     string getValidChar(QNode* currQ) {
         string input;
         while (true) {
@@ -169,9 +175,17 @@ public:
         getline(cin, input); 
         return input;
     }
-    void writeQuestion(string type) {
+    
+    /**
+     * @brief writes question and adds to QuestionBank
+     * 
+     * @param type      determines which type of question  
+     * @return true     if method was successful 
+     * @return false    if method was unsuccessful
+     */
+    bool writeQuestion(string type) {
         QNode* currQ = new QNode(type);
-        //get question        
+        //get question
         currQ->questionPrompt = getPrompt();
         //get correctAns
         if(type == "TF") {//get correctAns for TF
@@ -210,6 +224,12 @@ public:
                 currLetter++;
             }
             cout << endl;
+            //in case no choices were given
+            if (currQ->choices.size() == 0) {
+                cout << "ERROR: No Choices were provided. Please Retry" << endl;
+                return false;
+            }
+
             //get correctAns for MCQ
             currQ->correctAns = getValidChar(currQ);
 
@@ -219,6 +239,16 @@ public:
         currQ->ptValue = getValidPt();;
         //append to questionBank
         appendToTail(currQ);
+        totalQuestions++;
+        totalPoints += currQ->ptValue;
+        return true;
+    }
+
+    //session log methods
+    void printSessionLog() {
+        cout << endl << "=== SESSION LOG ===" <<endl;
+        cout << "Total questions: " << totalQuestions << endl;
+        cout << "Total point values: " << totalPoints << endl;
     }
 };
 
@@ -226,23 +256,26 @@ public:
 
 int main () {
     
-    int totalQuestions = 1;
-    double totalPts = 0;
+    /* int totalQuestions = 1;
+    double totalPts = 0; */
     QuestionBank* qBank = new QuestionBank();
 
-
     printWelcome();
+
     bool addStatus = true;
     //writeQuestion loop
     while (addStatus == true) {
-        cout << endl << endl << "=== QUESTION " << totalQuestions << " ===" << endl << endl;
+        cout << endl << endl << "=== QUESTION " << qBank->totalQuestions +1 << " ===" << endl << endl;
         //write question
-        qBank->writeQuestion(chooseType());
-        totalQuestions++;
-        //continue?
-        addStatus = isOkToAddQ();
-
+        if (qBank->writeQuestion(chooseType())) {
+            addStatus = isOkToAddQ();
+        }
     }
+
+    //session log
+    qBank->printSessionLog();
+
+    //begin assessment
 
     printGoodbye();
     qBank->printQuestionInfo();
