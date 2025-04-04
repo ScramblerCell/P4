@@ -1,5 +1,12 @@
 {
     "files.associations": {
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "istream": "cpp",
+        "limits": "cpp",
+        "__bit_reference": "cpp",
+        "initializer_list": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "ostream": "cpp"
     }
 }
