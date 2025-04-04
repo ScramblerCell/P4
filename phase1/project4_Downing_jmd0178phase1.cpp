@@ -4,7 +4,9 @@ Name: Jonah Downing
 #include <string>
 #include <iostream>
 #include <cctype>
+#include <map>
 #include <limits>
+#include <regex>
 
 using namespace std;
 
@@ -17,56 +19,66 @@ string makeUpperCase(string input) {
     transform(input.begin(), input.end(), input.begin(), ::toupper);
     return  input;
 }
-void emptyCin() {
+/* void emptyCin() {//retired
     cin.clear();
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
-}
+} */
 string chooseType() {
     string input;
     cout << "Type of question [mcq/tf/wr]: ";
-    cin >> input;
+    getline(cin, input);
     input = makeUpperCase(input);
     while (input != "MCQ" && makeUpperCase(input) != "WR" && makeUpperCase(input) != "TF") {
         cout << cmdErrMsg << endl << endl;
         cout << "Type of question [mcq/tf/wr]: ";
-        emptyCin();
-        cin >> input;
+        getline(cin, input);
         input = makeUpperCase(input);
     }
 
     return input;
 }
-double getValidPt(){
+double getValidPt() {
+    string input;
     double value;
-    while(true){
+    regex validNumberPattern("^-?\\d+(\\.\\d+)?([eE][-+]?\\d+)?$");
+
+    while (true) {
         cout << "Enter point value: ";
-        cin >> value;
-        if(cin.fail() || (value < 0)){
-        emptyCin();
-        cout << ptErrMsg << endl << endl;
+        getline(cin, input);  // Read the full input as a string
+        
+        // Check if the input matches a valid number format
+        if (!(regex_match(input, validNumberPattern))) {
+            cout << ptErrMsg << endl << endl;
+            continue;  // Skip further processing and ask for input again
         }
-        else {
-            break;
+
+        // Convert input to double
+        value = stod(input);
+
+        // Check if the value is negative
+        if (value < 0) {
+            cout << ptErrMsg << endl << endl;
+        } else {
+            break;  // Break the loop if everything is valid
         }
-    
     }
     return value;
 }
 bool isOkToAddQ() {
     string input;
     cout << "Question saved. Continue? [y/n]: ";
-    emptyCin();
     getline(cin, input);
     input = makeUpperCase(input);
     while (input != "Y" && input != "N") {
-        cout << endl <<cmdErrMsg << endl << "Question saved. Continue? [y/n]: "; 
+        cout <<cmdErrMsg << endl << "Question saved. Continue? [y/n]: "; 
         getline(cin, input);
         input = makeUpperCase(input);
+        cout << endl;
     }
     if (input == "Y") {return true;} else {return false;}
 }
 void printWelcome() {
-    cout << "*** Welcome to Jonah's Testing Service ***" << endl << endl;
+    cout << "*** Welcome to Jonah's Testing Service ***" << endl;
 }
 void printGoodbye() {
     cout << endl << "*** Thank you for using the testing service, Goodbye! ***" << endl;
@@ -82,6 +94,7 @@ public:
     string correctAns;
     QNode* prevQ;
     QNode* nextQ;
+    map<char,string> choices;
     //constructor
     QNode(string type);
     //methods
@@ -103,6 +116,26 @@ public:
         tail = nullptr;
     }
     //methods
+    string getValidChar(QNode* currQ) {
+        string input;
+        while (true) {
+            cout << "Select correct answer: ";
+            getline(cin, input);
+    
+            // Make sure it's a single alphabet character
+            if (input.length() == 1 && isalpha(input[0])) {
+                // Normalize to uppercase
+                char choice = toupper(input[0]);
+    
+                // Check if the choice exists in the MCQ map
+                if (currQ->choices.find(choice) != currQ->choices.end()) {
+                    return string(1, choice); // Return as string
+                }
+            }
+    
+            cout << ansErrMsg << endl << endl;
+        }
+    }
     void printQuestionInfo() {//test purposes only
         QNode* traverser = head;
         while (traverser != nullptr) {
@@ -110,6 +143,12 @@ public:
             cout << "prompt is " << traverser->questionPrompt <<endl;
             cout << "ptVal is " << traverser->ptValue <<endl;
             cout << "correctAns is " << traverser->correctAns <<endl<<endl;
+            if (traverser->choices.empty() == 0) {
+                cout << "Multiple Choice Found" << endl << "choices are:"<< endl;
+                for (auto choice : traverser->choices) {
+                    cout << choice.first << " : " << choice.second << endl;
+                }
+            }
             traverser = traverser -> nextQ;
         }
     }
@@ -127,9 +166,7 @@ public:
     string getPrompt() {
         string input;
         cout << endl << "Enter a question: ";
-        emptyCin();
         getline(cin, input); 
-        cout << endl;
         return input;
     }
     void writeQuestion(string type) {
@@ -141,7 +178,7 @@ public:
         if(type == "TF") {//get correctAns for TF
             string buffer;
             //initial input
-            cout << "Select correct Answer: "; 
+            cout << endl << "Select correct Answer: "; 
             getline(cin, buffer);
             buffer = makeUpperCase(buffer);
             //input validation
@@ -159,9 +196,26 @@ public:
             getline(cin, buffer);
             currQ->correctAns = makeUpperCase(buffer);
         }
-        else {
+        else if (type == "MCQ"){
+            //add choices to map
+            string choiceInput;
+            char currLetter = 'A';
+            cout << "[At any time, type ‘quit()’ to exit]" << endl;
+            while (true) {
+                cout << "Enter choice " << currLetter << ": ";
+                getline(cin, choiceInput);
+                if (makeUpperCase(choiceInput) == "QUIT()") {
+                    break;
+                }
+                currQ->choices[currLetter] = choiceInput;
+                currLetter++;
+            }
+            cout << endl;
+            //get correctAns for MCQ
+            currQ->correctAns = getValidChar(currQ);
 
         }
+        else {cout << "!!!type wasn't available!!!";}
         
         currQ->ptValue = getValidPt();;
 
@@ -182,11 +236,11 @@ int main () {
     bool addStatus = true;
     //writeQuestion loop
     while (addStatus == true) {
-        cout << "=== QUESTION " << totalQuestions << " ===" << endl;
+        cout << endl << "=== QUESTION " << totalQuestions << " ===" << endl;
         //write question
         qBank->writeQuestion(chooseType());
-        //continue?
         totalQuestions++;
+        //continue?
         addStatus = isOkToAddQ();
 
     }
