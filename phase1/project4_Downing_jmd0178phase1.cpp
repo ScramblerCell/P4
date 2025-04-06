@@ -15,31 +15,29 @@ string cmdErrMsg = "[Command not recognized, please try again!]";
 string ptErrMsg = "[Not a point value, please try again!]";
 string contMsg = "Question saved. Continue? [y/n]: ";
 //strings for assessment
-string assessmentMsg = "\n/!\\ Begin assessment? [y/n]: ";
+string assessmentMsg = "/!\\ Begin assessment? [y/n]: ";
 string correctMsg = "[Your answer is correct!]";
-
+void addBreak() {
+    cout << endl;
+}
 
 //miscFunctions
 string makeUpperCase(string input) {
     transform(input.begin(), input.end(), input.begin(), ::toupper);
-    return  input;
+    return input;
 }
-/* void emptyCin() {//retired
-    cin.clear();
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-} */
 string chooseType() {
     string input;
     cout << "Type of question [mcq/tf/wr]: ";
     getline(cin, input);
     input = makeUpperCase(input);
     while (input != "MCQ" && makeUpperCase(input) != "WR" && makeUpperCase(input) != "TF") {
-        cout << cmdErrMsg << endl << endl;
+        cout << cmdErrMsg << endl;
+        addBreak();
         cout << "Type of question [mcq/tf/wr]: ";
         getline(cin, input);
         input = makeUpperCase(input);
     }
-
     return input;
 }
 double getValidPt() {
@@ -53,7 +51,8 @@ double getValidPt() {
         
         // Check if the input matches a valid number format
         if (!(regex_match(input, validNumberPattern))) {
-            cout << ptErrMsg << endl << endl;
+            cout << ptErrMsg << endl;
+            addBreak();
             continue;  // Skip further processing and ask for input again
         }
 
@@ -62,7 +61,8 @@ double getValidPt() {
 
         // Check if the value is negative
         if (value < 0) {
-            cout << ptErrMsg << endl << endl;
+            cout << ptErrMsg << endl;
+            addBreak();
         } else {
             break;  // Break the loop if everything is valid
         }
@@ -75,7 +75,9 @@ bool wantToCont(string prompt) {
     getline(cin, input);
     input = makeUpperCase(input);
     while (input != "Y" && input != "N") {
-        cout <<cmdErrMsg << endl << endl << prompt; 
+        cout <<cmdErrMsg << endl;
+        addBreak();
+        cout << prompt; 
         getline(cin, input);
         input = makeUpperCase(input);
         cout << endl;
@@ -83,12 +85,13 @@ bool wantToCont(string prompt) {
     if (input == "Y") {return true;} else {return false;}
 }
 void printWelcome() {
+    addBreak();
     cout << "*** Welcome to Jonah's Testing Service ***" << endl;
 }
 void printGoodbye() {
-    cout << endl << "*** Thank you for using the testing service, Goodbye! ***" << endl;
+    addBreak();
+    cout << "*** Thank you for using the testing service, Goodbye! ***" << endl;
 }
-
 
 class QNode {
 public:
@@ -107,7 +110,6 @@ public:
     bool testUserAns() {
         return (correctAns == userAns);
     }
-
 };
 QNode::QNode(string type) {//constructor
     this->type = type;
@@ -138,21 +140,22 @@ public:
     string getValidChar(QNode* currQ) {
         string input;
         while (true) {
+            addBreak();
             cout << "Select correct answer: ";
             getline(cin, input);
     
-            // Make sure it's a single alphabet character
+            // ensure single alphabet character
             if (input.length() == 1 && isalpha(input[0])) {
-                // Normalize to uppercase
+                // change to uppercase
                 char choice = toupper(input[0]);
     
                 // Check if the choice exists in the MCQ map
                 if (currQ->choices.find(choice) != currQ->choices.end()) {
-                    return string(1, choice); // Return as string
+                    return string(1, choice); 
                 }
             }
-    
-            cout << ansErrMsg << endl << endl;
+            cout << ansErrMsg << endl;
+            //addBreak();
         }
     }
     void printQuestionInfo() {//test purposes only
@@ -167,7 +170,6 @@ public:
                 for (map<char, string>::iterator iterator = traverser->choices.begin(); iterator != traverser->choices.end(); ++iterator) {
                     cout << iterator->first << " : " << iterator->second << endl;
                 }
-                
             }
             cout << "userAns is: " <<traverser->userAns << endl;
             traverser = traverser -> nextQ;
@@ -186,7 +188,8 @@ public:
     }
     string getPrompt() {
         string input;
-        cout << endl << "Enter a question: ";
+        addBreak();
+        cout << "Enter a question: ";
         getline(cin, input); 
         return input;
     }
@@ -211,7 +214,9 @@ public:
             buffer = makeUpperCase(buffer);
             //input validation
             while (buffer != "TRUE" && buffer != "FALSE") {
-                cout <<ansErrMsg << endl << endl <<"Select correct Answer: "; 
+                cout <<ansErrMsg << endl;
+                addBreak();
+                cout <<"Select correct Answer: "; 
                 getline(cin, buffer);
                 buffer = makeUpperCase(buffer);
             }
@@ -228,7 +233,8 @@ public:
             //add choices to map
             string choiceInput;
             char currLetter = 'A';
-            cout << "[At any time, type ‘quit()’ to exit]" << endl << endl;
+            cout << "[At any time, type ‘quit()’ to exit]" << endl;
+            addBreak(); 
             while (true) {
                 cout << "Enter choice " << currLetter << ": ";
                 getline(cin, choiceInput);
@@ -238,7 +244,6 @@ public:
                 currQ->choices[currLetter] = choiceInput;
                 currLetter++;
             }
-            cout << endl;
             //in case no choices were given
             if (currQ->choices.size() == 0) {
                 cout << "ERROR: No Choices were provided. Please Retry" << endl;
@@ -247,9 +252,8 @@ public:
 
             //get correctAns for MCQ
             currQ->correctAns = getValidChar(currQ);
-
         }
-        else {cout << "!!!type wasn't available!!!";}
+        else {cout << "!!!type wasn't available!!!" << endl;}
         //get point value
         currQ->ptValue = getValidPt();;
         //append to questionBank
@@ -259,56 +263,63 @@ public:
         return true;
     }
 
-    //session log methods
+    //session log 
     void printSessionLog() {
-        cout << endl << "=== SESSION LOG ===" <<endl;
+        addBreak();addBreak(); 
+        cout << "=== SESSION LOG ===" <<endl;
         cout << "Total questions: " << totalQuestions << endl;
         cout << "Total point values: " << totalPoints << endl;
     }
 
     //assessment
-
     void beginQuiz() {
         QNode* traverser = head;
         for (int i = 1; i <= totalQuestions; i++) {
-            cout << "Question " << i << ": " << traverser->questionPrompt << endl << endl;
+            cout << "Question " << i << ": " << traverser->questionPrompt << endl;
             string input; 
             //get answer based on type
             if (traverser->type == "TF") {//tf
+                addBreak();
                 cout << "Your answer [true/false]: ";
                 getline(cin, input);
                 //input validation
                 input = makeUpperCase(input);
                 while (input != "TRUE" && input != "FALSE") {
-                    cout <<ansErrMsg << endl << endl <<"Select correct Answer: "; 
+                    cout <<ansErrMsg << endl;
+                    addBreak(); 
+                    cout << "Select correct Answer: "; 
                     getline(cin, input);
                     input = makeUpperCase(input);
                 }
                 //once valid, update values
                 traverser->userAns = input;
                 if (traverser->testUserAns()) {
-                    cout << correctMsg << endl << endl;
+                    cout << correctMsg << endl;
+                    addBreak();
                     earnedPoints += traverser->ptValue;
                     earnedQuestion++;   
                 } 
                 else {
-                    cout << "[Your answer is incorrect. The correct answer is " << traverser->correctAns << ".]" << endl<< endl;
+                    cout << "[Your answer is incorrect. The correct answer is " << traverser->correctAns << ".]" << endl;
+                    addBreak();
                 }
-                  
             } 
             else if (traverser->type == "WR") {//wr
+                addBreak();
                 cout << "Your answer: ";
                 getline(cin, input);
                 
                //once valid, update values
                traverser->userAns = makeUpperCase(input);
                if (traverser->testUserAns()) {
-                   cout << correctMsg << endl << endl;
+                   cout << correctMsg << endl;
+                   addBreak();
                    earnedPoints += traverser->ptValue;
                    earnedQuestion++;   
                } 
                else {
-                   cout << "[Your answer is incorrect. The correct answer is " << traverser->correctAns << ".]" << endl<< endl;
+                   cout << "[Your answer is incorrect. The correct answer is " << traverser->correctAns << ".]" << endl;
+                   addBreak();
                }
             }
             else {//mcq
@@ -316,28 +327,27 @@ public:
                 for (map<char, string>::iterator iterator = traverser->choices.begin(); iterator != traverser->choices.end(); ++iterator) {
                     cout << "\t" << iterator->first << ". " << iterator->second << endl;
                 }
-                /* cout << "Your answer: ";
-                getline(cin, input); */
-                //input validation
-                
                 //once valid, update values
                 traverser->userAns = getValidChar(traverser);
                 if (traverser->testUserAns()) {
-                    cout << correctMsg << endl << endl;
+                    cout << correctMsg << endl;
+                    addBreak();
                     earnedPoints += traverser->ptValue;
                     earnedQuestion++;   
                 } 
                 else {
-                    cout << "[Your answer is incorrect. The correct answer is " << traverser->correctAns << ".]" << endl<< endl;
+                    cout << "[Your answer is incorrect. The correct answer is " << traverser->correctAns << ".]" << endl;
+                    addBreak();
                 }
-
             }
             traverser = traverser->nextQ;
         }
-        cout << "/!\\ Assessment Complete." << endl << endl;
+        cout << "/!\\ Assessment Complete." << endl;
+        addBreak(); addBreak(); 
         cout << "=== SESSION LOG ===" << endl;
         cout << "Correct answers: " << earnedQuestion << "/" << totalQuestions << endl;
-        cout << "Final score: " << earnedPoints << "/" << totalPoints << endl << endl ;
+        cout << "Final score: " << earnedPoints << "/" << totalPoints << endl;
+        addBreak();
     }
 };
 
@@ -351,9 +361,13 @@ int main () {
     bool addStatus = true;
     //writeQuestion loop
     while (addStatus == true) {
-        cout << endl << endl << "=== QUESTION " << qBank->totalQuestions +1 << " ===" << endl << endl;
+        addBreak();
+        addBreak();
+        cout << "=== QUESTION " << qBank->totalQuestions +1 << " ===" << endl;
+        addBreak();
         //write question
         if (qBank->writeQuestion(chooseType())) {
+            addBreak();
             addStatus = wantToCont(contMsg);
         }
     }
@@ -362,10 +376,10 @@ int main () {
     qBank->printSessionLog();
 
     //begin assessment
+    addBreak();
     if (wantToCont(assessmentMsg)) {
-        cout << endl;
+        addBreak();
         qBank->beginQuiz();
-        
     };
 
     printGoodbye();
