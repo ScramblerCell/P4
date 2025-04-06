@@ -2,7 +2,7 @@
 project4_Downing_jmd0178phase1.cpp
 Name: Jonah Downing
 Auburn UserID: jmd0178
-Instructions: g++ project4_Downing_jmd0178phase1.cpp;./a.out
+Instructions: g++ project4_Downing_jmd0178phase1.cpp -o phase1;./phase1
 Additional Help
     - Youtube
         - https://www.youtube.com/watch?v=m7rrk65GiXY
