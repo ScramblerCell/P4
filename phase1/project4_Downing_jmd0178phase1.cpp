@@ -9,10 +9,15 @@ Name: Jonah Downing
 #include <regex>
 
 using namespace std;
-
+//strings for writingQuestion
 string ansErrMsg = "[Answer not recognized, please try again!]";
 string cmdErrMsg = "[Command not recognized, please try again!]";
 string ptErrMsg = "[Not a point value, please try again!]";
+string contMsg = "Question saved. Continue? [y/n]: ";
+//strings for assessment
+string assessmentMsg = "\n/!\\ Begin assessment? [y/n]: ";
+string correctMsg = "[Your answer is correct!]";
+
 
 //miscFunctions
 string makeUpperCase(string input) {
@@ -64,13 +69,13 @@ double getValidPt() {
     }
     return value;
 }
-bool isOkToAddQ() {
+bool wantToCont(string prompt) {
     string input;
-    cout << "Question saved. Continue? [y/n]: ";
+    cout << prompt;
     getline(cin, input);
     input = makeUpperCase(input);
     while (input != "Y" && input != "N") {
-        cout <<cmdErrMsg << endl << endl << "Question saved. Continue? [y/n]: "; 
+        cout <<cmdErrMsg << endl << endl << prompt; 
         getline(cin, input);
         input = makeUpperCase(input);
         cout << endl;
@@ -92,12 +97,16 @@ public:
     string questionPrompt;
     double ptValue;
     string correctAns;
+    string userAns;
     QNode* prevQ;
     QNode* nextQ;
     map<char,string> choices;
     //constructor
     QNode(string type);
     //methods
+    bool testUserAns() {
+        return (correctAns == userAns);
+    }
 
 };
 QNode::QNode(string type) {//constructor
@@ -113,6 +122,8 @@ public:
     QNode* tail;
     int totalQuestions;
     double totalPoints;
+    int earnedQuestion; //num questions answered correct
+    double earnedPoints; //num questions earned by student
 
     //constructor
     QuestionBank() {
@@ -120,6 +131,8 @@ public:
         tail = nullptr;
         totalQuestions = 0;
         totalPoints = 0;
+        earnedPoints = 0;
+        earnedQuestion = 0;
     }
     //writingQuestion methods
     string getValidChar(QNode* currQ) {
@@ -151,10 +164,12 @@ public:
             cout << "correctAns is " << traverser->correctAns <<endl<<endl;
             if (traverser->choices.empty() == 0) {
                 cout << "Multiple Choice Found" << endl << "choices are:"<< endl;
-                for (auto choice : traverser->choices) {
-                    cout << choice.first << " : " << choice.second << endl;
+                for (map<char, string>::iterator iterator = traverser->choices.begin(); iterator != traverser->choices.end(); ++iterator) {
+                    cout << iterator->first << " : " << iterator->second << endl;
                 }
+                
             }
+            cout << "userAns is: " <<traverser->userAns << endl;
             traverser = traverser -> nextQ;
         }
     }
@@ -250,14 +265,85 @@ public:
         cout << "Total questions: " << totalQuestions << endl;
         cout << "Total point values: " << totalPoints << endl;
     }
+
+    //assessment
+
+    void beginQuiz() {
+        QNode* traverser = head;
+        for (int i = 1; i <= totalQuestions; i++) {
+            cout << "Question " << i << ": " << traverser->questionPrompt << endl << endl;
+            string input; 
+            //get answer based on type
+            if (traverser->type == "TF") {//tf
+                cout << "Your answer [true/false]: ";
+                getline(cin, input);
+                //input validation
+                input = makeUpperCase(input);
+                while (input != "TRUE" && input != "FALSE") {
+                    cout <<ansErrMsg << endl << endl <<"Select correct Answer: "; 
+                    getline(cin, input);
+                    input = makeUpperCase(input);
+                }
+                //once valid, update values
+                traverser->userAns = input;
+                if (traverser->testUserAns()) {
+                    cout << correctMsg << endl << endl;
+                    earnedPoints += traverser->ptValue;
+                    earnedQuestion++;   
+                } 
+                else {
+                    cout << "[Your answer is incorrect. The correct answer is " << traverser->correctAns << ".]" << endl<< endl;
+                }
+                  
+            } 
+            else if (traverser->type == "WR") {//wr
+                cout << "Your answer: ";
+                getline(cin, input);
+                
+               //once valid, update values
+               traverser->userAns = makeUpperCase(input);
+               if (traverser->testUserAns()) {
+                   cout << correctMsg << endl << endl;
+                   earnedPoints += traverser->ptValue;
+                   earnedQuestion++;   
+               } 
+               else {
+                   cout << "[Your answer is incorrect. The correct answer is " << traverser->correctAns << ".]" << endl<< endl;
+               }
+            }
+            else {//mcq
+                //print choices
+                for (map<char, string>::iterator iterator = traverser->choices.begin(); iterator != traverser->choices.end(); ++iterator) {
+                    cout << "\t" << iterator->first << ". " << iterator->second << endl;
+                }
+                /* cout << "Your answer: ";
+                getline(cin, input); */
+                //input validation
+                
+                //once valid, update values
+                traverser->userAns = getValidChar(traverser);
+                if (traverser->testUserAns()) {
+                    cout << correctMsg << endl << endl;
+                    earnedPoints += traverser->ptValue;
+                    earnedQuestion++;   
+                } 
+                else {
+                    cout << "[Your answer is incorrect. The correct answer is " << traverser->correctAns << ".]" << endl<< endl;
+                }
+
+            }
+            traverser = traverser->nextQ;
+        }
+        cout << "/!\\ Assessment Complete." << endl << endl;
+        cout << "=== SESSION LOG ===" << endl;
+        cout << "Correct answers: " << earnedQuestion << "/" << totalQuestions << endl;
+        cout << "Final score: " << earnedPoints << "/" << totalPoints << endl << endl ;
+    }
 };
 
 
 
 int main () {
-    
-    /* int totalQuestions = 1;
-    double totalPts = 0; */
     QuestionBank* qBank = new QuestionBank();
 
     printWelcome();
@@ -268,7 +354,7 @@ int main () {
         cout << endl << endl << "=== QUESTION " << qBank->totalQuestions +1 << " ===" << endl << endl;
         //write question
         if (qBank->writeQuestion(chooseType())) {
-            addStatus = isOkToAddQ();
+            addStatus = wantToCont(contMsg);
         }
     }
 
@@ -276,7 +362,12 @@ int main () {
     qBank->printSessionLog();
 
     //begin assessment
+    if (wantToCont(assessmentMsg)) {
+        cout << endl;
+        qBank->beginQuiz();
+        
+    };
 
     printGoodbye();
-    qBank->printQuestionInfo();
+    //qBank->printQuestionInfo();
 }
