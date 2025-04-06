@@ -20,12 +20,73 @@ string cmdErrMsg = "[Command not recognized, please try again!]";
 string ptErrMsg = "[Not a point value, please try again!]";
 string contMsg = "Question saved. Continue? [y/n]: ";
 //strings for assessment
+void printWriteOptions() {
+    cout << "Do you want to?" << endl;
+    cout << "\t1. Create new question" << endl;
+    cout << "\t2. Edit questions" << endl;
+    cout << "\t3. Delete question" << endl;
+    cout << "\t4. Finish." << endl;
+}
+
 string assessmentMsg = "/!\\ Begin assessment? [y/n]: ";
 string correctMsg = "[Your answer is correct!]";
+void emptyCin() {
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
 void addBreak() {
     cout << endl;
 }
-
+int selectIntInRange(int maxNumQuestions, string promptMsg) {//good
+    int value;
+    while(true){
+        cout << promptMsg;
+        cin >> value;
+        if(cin.fail() || ((value < 1) && (value > maxNumQuestions))) {
+            emptyCin();
+            cout << "[That question does not exist!]" << endl;
+            addBreak();
+        }
+        else {
+            emptyCin();
+            break;
+        }
+    }
+    return value;
+}
+int selectIntInRangeOrQuit(int maxNumQuestions, string promptMsg) {
+    
+    string value;
+    int valueToInt;
+    while(true){
+        cout << promptMsg;
+        //emptyCin();
+        cin >> value; 
+        //check if quit()
+        if (value == "quit()") {
+            return -1;
+        }
+        //try to convert value to int
+        try {   
+            valueToInt = stoi(value);
+        }
+        catch (exception e) {
+            cout << ptErrMsg << endl;
+            addBreak();
+            emptyCin();
+            continue;
+        }
+        //verify in range
+        if (valueToInt < 1 || valueToInt > maxNumQuestions) {
+            emptyCin();
+            cout << "[That question does not exist!]" << endl;
+            addBreak();
+            continue;
+        }
+        return valueToInt;
+    }
+    return -1;
+}
 //miscFunctions
 /**
  * @param input     string to be uppercased
@@ -43,13 +104,16 @@ string makeUpperCase(string input) {
 string chooseType() {
     string input;
     cout << "Type of question [mcq/tf/wr]: ";
-    getline(cin, input);
+    cin >> input;
+    //emptyCin();
+    //getline(cin, input);
     input = makeUpperCase(input);
-    while (input != "MCQ" && makeUpperCase(input) != "WR" && makeUpperCase(input) != "TF") {
+    while (input != "MCQ" && input != "WR" && input != "TF") {
         cout << cmdErrMsg << endl;
         addBreak();
         cout << "Type of question [mcq/tf/wr]: ";
-        getline(cin, input);
+        cin >> input;
+        //getline(cin, input);
         input = makeUpperCase(input);
     }
     return input;
@@ -167,6 +231,7 @@ public:
         earnedPoints = 0;
         earnedQuestion = 0;
     }
+    
     //writingQuestion methods
     /**
      * @brief get valid character from user
@@ -180,6 +245,7 @@ public:
             addBreak();
             cout << "Select correct answer: ";
             getline(cin, input);
+            //emptyCin();//???
     
             // ensure single alphabet character
             if (input.length() == 1 && isalpha(input[0])) {
@@ -216,6 +282,26 @@ public:
             traverser = traverser -> nextQ;
         }
     }
+    void printQNodeInfo(QNode* traverser, int QtoEdit) {
+        cout << "===============================" << endl;
+        cout << "=== QUESTION " << QtoEdit << " SAVED VALUES ===" << endl;
+        cout << "===============================" << endl;
+
+        cout << "\t1. Type: " << traverser->type << endl;
+        cout << "\t2. Question: " << traverser->questionPrompt <<endl;
+        //if mcq, print choices
+        if (traverser->type == "MCQ") {
+            cout << "\t3. Answer choices: " << endl;
+            for (map<char, string>::iterator iterator = traverser->choices.begin(); iterator != traverser->choices.end(); ++iterator) {
+                cout << "\t\t" << iterator->first << ". " << iterator->second << endl;
+            }
+            cout << "\t4. Correct answer: " << traverser->correctAns <<endl;
+        } 
+        else {
+            cout << "\t3. Correct answer: " << traverser->correctAns <<endl;
+        }
+        cout << "===============================" << endl;
+    }
     void appendToTail(QNode* newQuestion) {
         if (head == nullptr) {
             head = newQuestion;
@@ -227,11 +313,37 @@ public:
             tail = newQuestion;
         }
     }
+    void delQat(int ithQuestion) {
+        QNode* traverser = head;
+        //find Qnode to be deleted
+        for ( int i = 1; i < ithQuestion; i++) {
+            traverser = traverser->nextQ;
+        }
+
+        //del node
+        if (traverser->prevQ == nullptr) {//QNode is head 
+            head = traverser->nextQ;
+            if(totalQuestions > 1){
+            head->prevQ = nullptr;
+            }
+        }
+        else if (traverser->nextQ == nullptr) {//QNode is tail
+            traverser->prevQ->nextQ = nullptr;
+        }
+        else {//QNode is body
+            traverser->prevQ->nextQ = traverser->nextQ;
+            traverser->nextQ->prevQ = traverser->prevQ;
+        }
+        totalQuestions--;
+    }
+
+
     string getPrompt() {
         string input;
         addBreak();
         cout << "Enter a question: ";
         getline(cin, input); 
+        //emptyCin();//???
         return input;
     }
     /**
@@ -242,8 +354,9 @@ public:
     void getTFcorrectAns(QNode* currQ) {
         string buffer;
         //initial input
-        cout << endl << "Select correct Answer: "; 
+        cout << endl << "Select correct Answer [true/false]: "; 
         getline(cin, buffer);
+        emptyCin();//???
         buffer = makeUpperCase(buffer);
         //input validation
         while (buffer != "TRUE" && buffer != "FALSE") {
@@ -265,7 +378,11 @@ public:
         //initial input
         cout << endl << "Type correct Answer: "; 
         getline(cin, buffer);
+        emptyCin();//???
         currQ->correctAns = makeUpperCase(buffer);
+    }
+    void getMCQcorrectAns(QNode* currQ) {
+        currQ->correctAns = getValidChar(currQ);
     }
     /**
      * @brief gets user to enter multiple choice options and to choose the letter corresponding to the correct option
@@ -274,7 +391,9 @@ public:
      * @return true     if at least one option was given; proceed to point assignment
      * @return false    if no option was given
      */
-    bool getMCQcorrectAns(QNode* currQ) {
+    bool getMCQchoices(QNode* currQ) {
+        //empty choices
+        currQ->choices.clear();
         //add choices to map
         string choiceInput;
         char currLetter = 'A';
@@ -283,6 +402,7 @@ public:
         while (true) {
             cout << "Enter choice " << currLetter << ": ";
             getline(cin, choiceInput);
+            emptyCin();//???
             if (makeUpperCase(choiceInput) == "QUIT()") {
                 break;
             }
@@ -294,9 +414,6 @@ public:
             cout << "ERROR: No Choices were provided. Please Retry" << endl;
             return false;
         }
-
-        //get correctAns for MCQ
-        currQ->correctAns = getValidChar(currQ);
         return true;
     }
     /**
@@ -318,16 +435,86 @@ public:
             getWRcorrectAns(currQ);
         }
         else if (type == "MCQ"){//add choices & get correctAns
-            if (!getMCQcorrectAns(currQ)) {return false;}
+            if (!getMCQchoices(currQ)) return false;
+            getMCQcorrectAns(currQ);
         }
         else {cout << "!!!type wasn't available!!!" << endl;}
-        
-        currQ->ptValue = getValidPt();//get point value
+        //get point value
+        currQ->ptValue = getValidPt();
         appendToTail(currQ);//append to questionBank
         totalQuestions++;
         totalPoints += currQ->ptValue;
         return true;
     }
+    void createQ() {
+        cout << "=== QUESTION " << totalQuestions +1 << " ===" << endl;
+        addBreak();
+        //write question
+        bool success = writeQuestion(chooseType());
+    }
+    void delQ() {
+        //get int
+        int QtoDel = selectIntInRange(totalQuestions, "Select a question to delete [1-" + to_string(totalQuestions) + "]: ");
+        delQat(QtoDel);
+        cout << "Question " << QtoDel << " deleted." << endl;
+        addBreak();
+    }    
+    void editQ() {
+        //choose which question to edit
+        int QtoEdit = selectIntInRangeOrQuit(totalQuestions, "Select a question to edit, or type quit() [1-" + to_string(totalQuestions) + "]: ");
+        
+        //find QNode in linked list
+        if (QtoEdit == -1) {
+            addBreak();
+            return;
+        }
+        QNode* traverser = head;
+        for ( int i = 1; i < QtoEdit; i++) {
+            traverser = traverser->nextQ;
+        }
+        
+        //printQuestion properties
+        addBreak();
+        printQNodeInfo(traverser, QtoEdit);
+        addBreak();
+        
+        //choose which property to edit
+        int maxNumQuestions = 3; 
+        if (traverser->type == "MCQ") {//if MCQ, then should be 4
+            maxNumQuestions = 4; 
+        }
+        
+        int propToEdit = -2;
+        while (propToEdit != -1) {
+            propToEdit = selectIntInRangeOrQuit(maxNumQuestions, "Select a number to edit, or type quit() [1-" + to_string(maxNumQuestions) + "]: ");
+            //edit property based on propToEdit
+            if (propToEdit == 1) {//edit type
+                traverser->type = chooseType();
+            }
+            else if (propToEdit == 2) {//edit Question
+                traverser->questionPrompt = getPrompt();
+            }
+            else if (traverser->type == "MCQ") {
+                if (propToEdit == 3) {//edit choices
+                    bool cont = true;
+                    while (cont) {
+                        cont = getMCQchoices(traverser);
+                    }
+                }
+                else if (propToEdit == 4) {//edit correctAns
+                    getMCQcorrectAns(traverser);
+                }
+            }
+            else if (traverser->type == "TF") {//edit TF correctAns
+                getTFcorrectAns(traverser);
+            }
+            else if (traverser->type == "WR") {//edit WR correctAns
+                getWRcorrectAns(traverser);
+            }
+        }
+        
+    }
+
 
     //session log 
     void printWritingLog() {
@@ -442,10 +629,6 @@ public:
             }
             traverser = traverser->nextQ;
         }
-        cout << "/!\\ Assessment Complete." << endl;
-        addBreak(); addBreak(); 
-        printAssessLog();
-        addBreak();
     }
 };
 
@@ -454,7 +637,7 @@ int main () {
 
     printWelcome();
 
-    bool addStatus = true;
+    /* bool addStatus = true;
     //writeQuestion loop
     while (addStatus == true) {
         addBreak();
@@ -466,18 +649,59 @@ int main () {
             addBreak();
             addStatus = wantToCont(contMsg);
         }
+    } */
+
+    bool modifyQuiz = true;
+    while (modifyQuiz) {
+        //print menu
+        addBreak();
+        printWriteOptions();
+        addBreak();
+
+        //select action
+        int action = selectIntInRange(4, "Select answer: ");
+        if (action == 1) {//create Q
+            addBreak();
+            addBreak();
+            qBank->createQ();
+        }
+        else if (action == 2) {//edit Q
+            if (qBank->totalQuestions > 0) {
+                addBreak();
+                qBank->editQ();
+            }
+            else {
+                cout << "There are no questions to edit" << endl;
+            }
+        }
+        else if (action == 3) {//delQ
+            addBreak();
+            if (qBank->totalQuestions > 0) {
+                qBank->delQ();
+            }
+            else {
+                cout << "There are no questions to delete" << endl;
+            }
+        }
+        else if (action == 4) {//finish
+            modifyQuiz = false;
+        }
     }
 
     //session log
     qBank->printWritingLog();
+    addBreak();
 
     //begin assessment
-    addBreak();
     if (wantToCont(assessmentMsg)) {
         addBreak();
         qBank->beginQuiz();
+        cout << "/!\\ Assessment Complete." << endl;
+        addBreak(); addBreak(); 
+        qBank->printAssessLog();
+        addBreak();
     };
 
     printGoodbye();
-    //qBank->printQuestionInfo();
+    qBank->printQuestionInfo();
 }

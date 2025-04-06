@@ -9,6 +9,7 @@
         "string_view": "cpp",
         "ostream": "cpp",
         "regex": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "ios": "cpp"
     }
 }

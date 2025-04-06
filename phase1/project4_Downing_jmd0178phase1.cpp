@@ -299,7 +299,7 @@ public:
      * @return true     if at least one option was given; proceed to point assignment
      * @return false    if no option was given
      */
-    bool getMCQcorrectAns(QNode* currQ) {
+    bool getMCQchoices(QNode* currQ) {
         //add choices to map
         string choiceInput;
         char currLetter = 'A';
@@ -343,7 +343,7 @@ public:
             getWRcorrectAns(currQ);
         }
         else if (type == "MCQ"){//add choices & get correctAns
-            if (!getMCQcorrectAns(currQ)) {return false;}
+            if (!getMCQchoices(currQ)) {return false;}
         }
         else {cout << "!!!type wasn't available!!!" << endl;}
         
