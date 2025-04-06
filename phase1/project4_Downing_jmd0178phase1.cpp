@@ -1,5 +1,35 @@
 /*
+project4_Downing_jmd0178phase1.cpp
 Name: Jonah Downing
+Auburn UserID: jmd0178
+Instructions: g++ project4_Downing_jmd0178phase1.cpp;./a.out
+Additional Help
+    - Youtube
+        - https://www.youtube.com/watch?v=m7rrk65GiXY
+        - https://www.youtube.com/watch?v=-StYr9wILqo
+        - https://youtu.be/-StYr9wILqo?si=TJHz_UNhUmFMoq5a
+    - chatgpt
+        - how do i know when to create classes and how to divide them up for projects
+        - class vs struct
+        - how do pointers work in cpp
+        - what is the & symbol?
+        - when using pointers why use -> instead of .
+        - can i declare a questionNode object outside of main so it can be accessed in any method
+        - i need further clarification on pointer vs object
+        - why would someone define a function/method oustide of the class it was declared in
+            - so is it always better to define outside?
+        - how do i know if i'm going to want questionNode to be a obect or a pointer
+        - how to do use a constructor in a child class?
+        - can i use == to compare striongs
+        - how can i use ascii values of characters to ensure a char input is alphabetical
+        - why would i be getting this? warning: 'auto' type specifier is a C++11 extension [-Wc++11-extensions] for (auto choice : traverser->choices) {
+        - how to convert from char to string
+        - is it bad practice to use a return to premptively exit a void method
+    - W3 Schools
+        - https://www.w3schools.com/cpp/cpp_pointers.asp
+        - read through their tutorials on structures, pointers, classes, constructors, inheritance, maps
+    - talked to aidan scott, michael algarin, and adrian bennett about general approaches; started project with derived classes, but wound up using a single parent class for simplicity’s sake
+    - https://www.programiz.com/cpp-programming/library-function/cctype/toupper
 */
 #include <string>
 #include <iostream>
