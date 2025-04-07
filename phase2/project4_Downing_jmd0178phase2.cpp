@@ -37,20 +37,27 @@ void emptyCin() {
 void addBreak() {
     cout << endl;
 }
-int selectIntInRange(int maxNumQuestions, string promptMsg) {//good
-    int value;
-    while(true){
-        cout << promptMsg;
-        cin >> value;
-        if(cin.fail() || ((value < 1) && (value > maxNumQuestions))) {
-            emptyCin();
-            cout << "[That question does not exist!]" << endl;
-            addBreak();
-        }
-        else {
-            emptyCin();
-            break;
-        }
+int selectIntInRange(int maxNumQuestions, string promptMsg) {
+    string buffer;
+int value;
+while (true) {
+    cout << promptMsg;
+    getline(cin, buffer);
+
+    try {
+        value = stoi(buffer);
+    } catch (...) {
+        cout << "[That question does not exist!]" << endl;
+        addBreak();
+        continue;
+    }
+
+    if (value < 1 || value > maxNumQuestions) {
+        cout << "[That question does not exist!]" << endl;
+        addBreak();
+    } else {
+        break;
+    }
     }
     return value;
 }
@@ -60,8 +67,8 @@ int selectIntInRangeOrQuit(int maxNumQuestions, string promptMsg) {
     int valueToInt;
     while(true){
         cout << promptMsg;
-        //emptyCin();
-        cin >> value; 
+        //
+        getline(cin, value);
         //check if quit()
         if (value == "quit()") {
             return -1;
@@ -73,12 +80,12 @@ int selectIntInRangeOrQuit(int maxNumQuestions, string promptMsg) {
         catch (exception e) {
             cout << ptErrMsg << endl;
             addBreak();
-            emptyCin();
+            
             continue;
         }
         //verify in range
         if (valueToInt < 1 || valueToInt > maxNumQuestions) {
-            emptyCin();
+            
             cout << "[That question does not exist!]" << endl;
             addBreak();
             continue;
@@ -104,16 +111,14 @@ string makeUpperCase(string input) {
 string chooseType() {
     string input;
     cout << "Type of question [mcq/tf/wr]: ";
-    cin >> input;
-    //emptyCin();
-    //getline(cin, input);
+    getline(cin, input);
     input = makeUpperCase(input);
     while (input != "MCQ" && input != "WR" && input != "TF") {
+        emptyCin();
         cout << cmdErrMsg << endl;
         addBreak();
         cout << "Type of question [mcq/tf/wr]: ";
-        cin >> input;
-        //getline(cin, input);
+        getline(cin, input);
         input = makeUpperCase(input);
     }
     return input;
@@ -245,7 +250,7 @@ public:
             addBreak();
             cout << "Select correct answer: ";
             getline(cin, input);
-            //emptyCin();//???
+            ////???
     
             // ensure single alphabet character
             if (input.length() == 1 && isalpha(input[0])) {
@@ -338,12 +343,11 @@ public:
     }
 
 
-    string getPrompt() {
+    string getPrompt() {//good
         string input;
         addBreak();
         cout << "Enter a question: ";
         getline(cin, input); 
-        //emptyCin();//???
         return input;
     }
     /**
@@ -354,15 +358,15 @@ public:
     void getTFcorrectAns(QNode* currQ) {
         string buffer;
         //initial input
-        cout << endl << "Select correct Answer [true/false]: "; 
+        addBreak();
+        cout << "Select correct Answer [true/false]: "; 
         getline(cin, buffer);
-        emptyCin();//???
         buffer = makeUpperCase(buffer);
         //input validation
         while (buffer != "TRUE" && buffer != "FALSE") {
             cout <<ansErrMsg << endl;
             addBreak();
-            cout <<"Select correct Answer: "; 
+            cout <<"Select correct Answer [true/false]: "; 
             getline(cin, buffer);
             buffer = makeUpperCase(buffer);
         }
@@ -378,7 +382,6 @@ public:
         //initial input
         cout << endl << "Type correct Answer: "; 
         getline(cin, buffer);
-        emptyCin();//???
         currQ->correctAns = makeUpperCase(buffer);
     }
     void getMCQcorrectAns(QNode* currQ) {
@@ -391,7 +394,7 @@ public:
      * @return true     if at least one option was given; proceed to point assignment
      * @return false    if no option was given
      */
-    bool getMCQchoices(QNode* currQ) {
+    bool getMCQchoices(QNode* currQ) {//good
         //empty choices
         currQ->choices.clear();
         //add choices to map
@@ -402,7 +405,6 @@ public:
         while (true) {
             cout << "Enter choice " << currLetter << ": ";
             getline(cin, choiceInput);
-            emptyCin();//???
             if (makeUpperCase(choiceInput) == "QUIT()") {
                 break;
             }
